@@ -1,0 +1,73 @@
+.program adc_spi_master_unidir
+.side_set 1
+
+.wrap_target
+    pull            side 0x0
+
+    set pins, 0     side 0x0
+bitloop:
+    nop             side 0x1    ;This is to delay the in instruction to compensate for delay from the part and propagation delay
+    in pins, 1      side 0x1
+    jmp x-- bitloop side 0x0 [1]
+
+    mov x, y        side 0x1
+    in pins, 1      side 0x1
+
+    set pins, 1     side 0x0 [1]
+.wrap
+
+% c-sdk {
+    #include "hardware/gpio.h"
+
+    // Helper function (for use in C program) to initialize this PIO program
+    void adc_spi_master_unidir_init(PIO pio, uint sm, uint offset, uint sclk_pin, uint sdi_pin, uint csn_pin, float div, uint n_bits){
+
+        // Sets up state machine and wrap target. This function is automatically
+        // generated in adc_spi_master_uni.h.
+        pio_sm_config c = adc_spi_master_unidir_program_get_default_config(offset);
+
+        // Allow PIO to control GPIO pins (as output) and enable input
+        pio_gpio_init(pio, csn_pin);
+        pio_gpio_init(pio, sclk_pin);
+        pio_gpio_init(pio, sdi_pin);
+
+        // Connect pin to SET pin (control with 'set' instruction)
+        sm_config_set_set_pins(&c, csn_pin, 1);
+
+        // Use pin for input
+        sm_config_set_in_pins(&c, sdi_pin);
+
+        // Use pin for sideset
+        sm_config_set_sideset_pins(&c, sclk_pin);
+
+        // Configure ISR
+        sm_config_set_in_shift(&c, false, true, n_bits);
+
+        // Set the default pin values (in PIO)
+        pio_sm_set_pins_with_mask(pio, sm, 0, 1 << sclk_pin);
+        pio_sm_set_pins_with_mask(pio, sm, 1, 1 << csn_pin);
+
+        // Set the pin directions (in PIO)
+        pio_sm_set_pindirs_with_mask(pio, sm, (1 << sclk_pin) | (1 << csn_pin), (1 << sclk_pin) | (1 << sdi_pin) | (1 << csn_pin));
+
+        // Bypass input synchronizers
+        hw_set_bits(&pio->input_sync_bypass, 1 << sdi_pin);
+
+        // Set the clock divider for the state machine
+        sm_config_set_clkdiv(&c, div);
+
+        // Load configuration and jump to start of the program
+        pio_sm_init(pio, sm, offset, &c);
+        pio_sm_exec(pio, sm, pio_encode_set(pio_x, n_bits - 2));
+        pio_sm_exec(pio, sm, pio_encode_set(pio_y, n_bits - 2));
+        pio_sm_set_enabled(pio, sm, true);
+    }
+
+    // This function restarts the state machine
+    void adc_spi_master_unidir_restart(PIO pio, uint sm, uint offset)
+    {
+        pio_sm_restart(pio, sm);
+        pio_sm_clkdiv_restart(pio, sm);
+        pio_sm_exec(pio, sm, pio_encode_jmp(offset));
+    }
+%}

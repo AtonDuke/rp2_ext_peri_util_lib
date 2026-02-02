@@ -5,15 +5,6 @@
 
 #include <stdio.h>
 
-//unsigned int check_counter = 0;
-//static char debug_buffer[256];
-
-/*char *get_addr_check_count(uint8_t addr)
-{
-    sprintf(debug_buffer, "Debug info\nAddress: %u\nCheck counter: %u\n", addr, check_counter);
-    return debug_buffer;
-}*/
-
 int at24cs0x_check_write_in_progress(at24cs0x_inst_t *inst)
 {
     if(!inst->write_in_progress) return 0; //no point in figuring out if a write is in progress if it's not
@@ -51,8 +42,6 @@ int at24cs0x_check_write_in_progress(at24cs0x_inst_t *inst)
     //if there's a NACK on address, the EEPROM is busy writing
     inst->write_in_progress = abort_reason & I2C_IC_TX_ABRT_SOURCE_ABRT_7B_ADDR_NOACK_BITS;
 
-    //++check_counter;
-
     return inst->write_in_progress ? 1 : 0;
 }
 
@@ -78,7 +67,6 @@ int at24cs0x_init(at24cs0x_inst_t *inst, i2c_inst_t *i2c, uint8_t bus_addr_lo, a
 
 int at24cs0x_read_current_addr(at24cs0x_inst_t *inst, uint8_t *dest)
 {
-    //check_counter = 0;
     int ret_val = at24cs0x_check_write_in_progress(inst);
     while(ret_val > 0)
     {
@@ -86,22 +74,17 @@ int at24cs0x_read_current_addr(at24cs0x_inst_t *inst, uint8_t *dest)
     }
     if(ret_val < 0) return PICO_ERROR_GENERIC;
 
-    //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
     ret_val = i2c_read_blocking(inst->i2c, inst->addr, dest, 1, false);
     if(ret_val < 1) return PICO_ERROR_GENERIC;
-    //hw_clear_bits(&i2c1->hw->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
 
     ++inst->current_address;
     inst->current_address %= inst->size / 8;
-
-    //printf("Read current address check count: %u\n", check_counter);
 
     return PICO_OK;
 }
 
 int at24cs0x_read_single_byte(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *dest)
 {
-    //check_counter = 0;
     int ret_val = at24cs0x_check_write_in_progress(inst);
     while(ret_val > 0)
     {
@@ -109,25 +92,20 @@ int at24cs0x_read_single_byte(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *dest
     }
     if(ret_val < 0) return PICO_ERROR_GENERIC;
 
-    //i2c1->hw->intr_mask = I2C_IC_INTR_MASK_M_TX_ABRT_BITS;
     ret_val = i2c_write_blocking(inst->i2c, inst->addr, &addr, 1, true);
     if(ret_val < 1) return PICO_ERROR_GENERIC;
 
     ret_val = i2c_read_blocking(inst->i2c, inst->addr, dest, 1, false);
     if(ret_val < 1) return PICO_ERROR_GENERIC;
-    //i2c1->hw->intr_mask = 0;
 
     inst->current_address = addr + 1;
     inst->current_address %= inst->size / 8;
-
-    //printf("Read single byte check counter: %u\n", check_counter);
 
     return PICO_OK;
 }
 
 int at24cs0x_read_bytes(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *dest, uint8_t len)
 {
-    //check_counter = 0;
     int ret_val = at24cs0x_check_write_in_progress(inst);
     while(ret_val > 0)
     {
@@ -135,25 +113,20 @@ int at24cs0x_read_bytes(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *dest, uint
     }
     if(ret_val < 0) return PICO_ERROR_GENERIC;
 
-    //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
     ret_val = i2c_write_blocking(inst->i2c, inst->addr, &addr, 1, true);
     if(ret_val < 1) return PICO_ERROR_GENERIC;
 
-    //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
     ret_val = i2c_read_blocking(inst->i2c, inst->addr, dest, len, false);
     if(ret_val < len) return PICO_ERROR_GENERIC;
-    //hw_clear_bits(&i2c1->hw->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
 
     inst->current_address = addr + len;
     inst->current_address %= inst->size / 8;
 
-    //printf("Read bytes check counter: %u\n", check_counter);
     return PICO_OK;
 }
 
 int at24cs0x_write_single_byte(at24cs0x_inst_t *inst, uint8_t addr, uint8_t data)
 {
-    //check_counter = 0;
     int ret_val = at24cs0x_check_write_in_progress(inst);
     while(ret_val > 0)
     {
@@ -164,10 +137,8 @@ int at24cs0x_write_single_byte(at24cs0x_inst_t *inst, uint8_t addr, uint8_t data
     inst->write_in_progress = true;
 
     uint8_t frame[] = {addr, data};
-    //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
     ret_val = i2c_write_blocking(inst->i2c, inst->addr, frame, 2, false);
     if(ret_val < 2) return PICO_ERROR_GENERIC;
-    //hw_clear_bits(&i2c1->hw->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
 
     inst->last_write_time = get_absolute_time();
 
@@ -177,7 +148,6 @@ int at24cs0x_write_single_byte(at24cs0x_inst_t *inst, uint8_t addr, uint8_t data
         inst->current_address -= AT24CS0X_PAGE_SIZE;
     }
 
-    //printf("Write single byte check counter: %u\n");
     return PICO_OK;
 }
 
@@ -187,7 +157,6 @@ int at24cs0x_write_bytes(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *data, uin
     int i = 0;
     while(remains > 0)
     {
-        //check_counter = 0;
         int ret_val = at24cs0x_check_write_in_progress(inst);
         while(ret_val > 0)
         {
@@ -203,14 +172,11 @@ int at24cs0x_write_bytes(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *data, uin
 
         inst->write_in_progress = true;
 
-        //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
         ret_val = i2c_write_burst_blocking(inst->i2c, inst->addr, &addr, 1);
         if(ret_val < 1) return PICO_ERROR_GENERIC;
 
-        //hw_set_bits(&i2c_get_hw(i2c1)->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
         ret_val = i2c_write_blocking(inst->i2c, inst->addr, &(data[i]), frame_size, false);
         if(ret_val < 1) return PICO_ERROR_GENERIC;
-        //hw_clear_bits(&i2c1->hw->intr_mask, I2C_IC_INTR_MASK_M_TX_ABRT_BITS);
 
         inst->last_write_time = get_absolute_time();
 
@@ -218,7 +184,6 @@ int at24cs0x_write_bytes(at24cs0x_inst_t *inst, uint8_t addr, uint8_t *data, uin
         remains -= frame_size;
         i += frame_size;
 
-        //printf("Write byte check counter: %u\n", check_counter);
     }
 
     inst->current_address  = addr + len;

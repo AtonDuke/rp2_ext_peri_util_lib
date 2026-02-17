@@ -1,6 +1,8 @@
 #ifndef SERIAL_IO_UTILS_H
 #define SERIAL_IO_UTILS_H
 
+#include <stdbool.h>
+
 /**
  * \file serial_io_utils.h
  * \defgroup util_serial_io_utils util_serial_io_utils

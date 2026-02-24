@@ -6,7 +6,7 @@
 
 uint16_t dac121s101_assemble_frame(dac121s101_pd_states_t pd_state, uint16_t data)
 {
-    return (data & DAC121S101_DATA_BITS) | ((pd_state & DAC121S101_PD_BITS) << DAC121S101_PD_SHIFT);
+    return (data & DAC121S101_DATA_BITS) | ((pd_state << DAC121S101_PD_SHIFT) & DAC121S101_PD_BITS);
 }
 
 void dac121s101_init_hw_spi(dac121s101_inst_t *inst, spi_inst_t *hw_spi_inst, uint sclk_pin, uint mosi_pin, uint sync_pin)

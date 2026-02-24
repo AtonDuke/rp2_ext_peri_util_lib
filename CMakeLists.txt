@@ -10,6 +10,7 @@ target_sources(rp2_ext_peri_util_lib INTERFACE
     src/ads7042.c
     src/fan_control.c
     src/at24cs0x.c
+    src/dac081c08x.c
     src/serial_io_utils.c
     src/nv_struct.c
 )

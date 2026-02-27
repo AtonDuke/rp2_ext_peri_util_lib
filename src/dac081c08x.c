@@ -16,7 +16,7 @@ void dac081c08x_init_hw_spi(dac081c08x_inst_t *inst, i2c_inst_t *i2c, uint8_t ad
     i2c_write_blocking(inst->i2c, inst->addr, (uint8_t*)&frame, 2, false);
 }
 
-void dac081c08x_write_all(dac081c08x_inst_t *inst, uint16_t data, dac081c08x_pd_states_t pd_state)
+void dac081c08x_write_all(dac081c08x_inst_t *inst, uint8_t data, dac081c08x_pd_states_t pd_state)
 {
     inst->pd_state_copy = pd_state;
     inst->data_copy = data;
@@ -24,7 +24,7 @@ void dac081c08x_write_all(dac081c08x_inst_t *inst, uint16_t data, dac081c08x_pd_
     i2c_write_blocking(inst->i2c, inst->addr, (uint8_t*)&frame, 2, false);
 }
 
-void dac081c08x_write_data(dac081c08x_inst_t *inst, uint16_t data)
+void dac081c08x_write_data(dac081c08x_inst_t *inst, uint8_t data)
 {
     inst->data_copy = data;
     const uint16_t frame = dac081c08x_assemble_frame(inst->pd_state_copy, data);

@@ -5,7 +5,7 @@ uint16_t dac081c08x_assemble_frame(dac081c08x_pd_states_t pd_state, uint8_t data
     return (data & DAC081C08X_DATA_BITS) | ((pd_state << DAC081C08X_PD_SHIFT) & DAC081C08X_PD_BITS);
 }
 
-void dac081c08x_init_hw_spi(dac081c08x_inst_t *inst, i2c_inst_t *i2c, uint8_t addr)
+void dac081c08x_init(dac081c08x_inst_t *inst, i2c_inst_t *i2c, uint8_t addr)
 {
     inst->i2c = i2c;
     inst->addr = addr;

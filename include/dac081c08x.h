@@ -30,16 +30,16 @@
 #define DAC081C08X_RESOLUTION 8
 
 /** 
- * \brief Power-down bits bitmask
+ * \brief Power-down bits bitmask in the upper byte
  * \ingroup peri_dac_dac081c08x
 */
-#define DAC081C08X_PD_BITS 0x3000
+#define DAC081C08X_PD_BITS 0x30
 
 /** 
- * \brief How many bits to left shift power-down state bits
+ * \brief How many bits to left shift power-down state bits in the upper byte
  * \ingroup peri_dac_dac081c08x
 */
-#define DAC081C08X_PD_SHIFT 12
+#define DAC081C08X_PD_SHIFT 4
 
 /** 
  * \brief Data bits bitmask
@@ -100,11 +100,12 @@ typedef struct
  * \brief Assemble data frame to be sent to the DAC
  * \ingroup peri_dac_dac081c08x
  * 
+ * \param frame 2 x uint8_t array in which the resultant data frame is stored
  * \param pd_state Power-down state to be set
  * \param data DAC register value to be sent
- * \return Resultant 16-bit frame
+ * \return Resultant 2x8-bit array frame
 */
-uint16_t dac081c08x_assemble_frame(dac081c08x_pd_states_t pd_state, uint8_t data);
+void dac081c08x_assemble_frame(uint8_t *frame, dac081c08x_pd_states_t pd_state, uint8_t data);
 
 /** 
  * \brief Initialise the DAC connected to a SPI HW block

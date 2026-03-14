@@ -30,22 +30,28 @@
 #define DAC081C08X_RESOLUTION 8
 
 /** 
- * \brief Power-down bits bitmask in the upper byte
+ * \brief Power-down bits bitmask in the overall 16-bit frame
  * \ingroup peri_dac_dac081c08x
 */
-#define DAC081C08X_PD_BITS 0x30
+#define DAC081C08X_PD_BITS 0x3000
 
 /** 
- * \brief How many bits to left shift power-down state bits in the upper byte
+ * \brief How many bits to left shift power-down state bits in the overall 16-bit frame
  * \ingroup peri_dac_dac081c08x
 */
-#define DAC081C08X_PD_SHIFT 4
+#define DAC081C08X_PD_SHIFT 12
 
 /** 
  * \brief Data bits bitmask
  * \ingroup peri_dac_dac081c08x
 */
-#define DAC081C08X_DATA_BITS 0xFF
+#define DAC081C08X_DATA_BITS 0xFF0
+
+/**
+ * \brief How many bits to left shift data bits in the overall 16-bit frame
+ * \ingroup peri_dac_dac081c08x
+*/
+#define DAC081C08X_DATA_SHIFT 4
 
 /**
  * \brief Power-down state enum

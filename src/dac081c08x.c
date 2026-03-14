@@ -2,8 +2,9 @@
 
 void dac081c08x_assemble_frame(uint8_t *frame, dac081c08x_pd_states_t pd_state, uint8_t data)
 {
-    frame[1] = data;
-    frame[0] = pd_state << DAC081C08X_PD_SHIFT;
+    //uint16_t loc_frame = (data << DAC081C08X_DATA_SHIFT) | ((pd_state << DAC081C08X_PD_SHIFT) & DAC081C08X_PD_BITS);
+    frame[1] = data << DAC081C08X_DATA_SHIFT;
+    frame[0] = (pd_state << (DAC081C08X_PD_SHIFT - 8) & DAC081C08X_PD_BITS) | data >> DAC081C08X_DATA_SHIFT;
 }
 
 void dac081c08x_init(dac081c08x_inst_t *inst, i2c_inst_t *i2c, uint8_t addr)

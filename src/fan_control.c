@@ -70,7 +70,7 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
 
 uint fan_set_speed_man(fan_inst_t *inst, uint speed)
 {
-    uint speed_clamped = speed < inst->min_speed ? 0 : (speed > MAX_FAN_SPEED_VALUE ? MAX_FAN_SPEED_VALUE : 0);
+    uint speed_clamped = speed < inst->min_speed ? 0 : (speed > MAX_FAN_SPEED_VALUE ? MAX_FAN_SPEED_VALUE : speed);
     pwm_set_chan_level(inst->pwm_slice_num, inst->pwm_chan_num, speed_clamped);
     inst->speed = speed_clamped;
     return inst->speed;

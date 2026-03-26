@@ -13,9 +13,9 @@ typedef enum{
 } fan_channel_claim_state_t;
 
 #if NUM_PWM_SLICES > 8
-    fan_channel_claim_state_t chan_claim_state[12][2] = {false};
+    fan_channel_claim_state_t chan_claim_state[12][2] = {FAN_CHAN_FREE};
 #else
-    fan_channel_claim_state_t chan_claim_state[8][2] = {false};
+    fan_channel_claim_state_t chan_claim_state[8][2] = {FAN_CHAN_FREE};
 #endif
 
 void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, uint min_speed)

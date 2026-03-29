@@ -26,8 +26,6 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
     assert(chan_claim_state[pwm_slice_num][pwm_chan_num] == FAN_CHAN_FREE);
     assert(chan_claim_state[pwm_slice_num][PWM_CHAN_B] != FAN_CHAN_TACHO);
 
-    chan_claim_state[pwm_slice_num][pwm_chan_num] = FAN_CHAN_PWM;
-
     inst->min_speed = min_speed;
     inst->pwm_slice_num = pwm_slice_num;
     inst->pwm_chan_num = pwm_chan_num;
@@ -41,6 +39,7 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
         assert(tacho_chan_num == PWM_CHAN_B);
         assert(chan_claim_state[tacho_slice_num][PWM_CHAN_A] == FAN_CHAN_FREE);
         assert(chan_claim_state[tacho_slice_num][PWM_CHAN_B] == FAN_CHAN_FREE);
+        assert(tacho_slice_num != pwm_slice_num);
 
         chan_claim_state[tacho_slice_num][tacho_chan_num] = FAN_CHAN_TACHO;
 
@@ -65,6 +64,7 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
         pwm_init(pwm_slice_num, &c, true);
     }
 
+    chan_claim_state[pwm_slice_num][pwm_chan_num] = FAN_CHAN_PWM;
     gpio_set_function(pwm_pin, GPIO_FUNC_PWM);
 }
 

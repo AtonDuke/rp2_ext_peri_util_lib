@@ -13,9 +13,9 @@ typedef enum{
 } fan_channel_claim_state_t;
 
 #if NUM_PWM_SLICES > 8
-    fan_channel_claim_state_t chan_claim_state[12][2] = {false};
+    fan_channel_claim_state_t chan_claim_state[12][2] = {FAN_CHAN_FREE};
 #else
-    fan_channel_claim_state_t chan_claim_state[8][2] = {false};
+    fan_channel_claim_state_t chan_claim_state[8][2] = {FAN_CHAN_FREE};
 #endif
 
 void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, uint min_speed)
@@ -25,8 +25,6 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
 
     assert(chan_claim_state[pwm_slice_num][pwm_chan_num] == FAN_CHAN_FREE);
     assert(chan_claim_state[pwm_slice_num][PWM_CHAN_B] != FAN_CHAN_TACHO);
-
-    chan_claim_state[pwm_slice_num][pwm_chan_num] = FAN_CHAN_PWM;
 
     inst->min_speed = min_speed;
     inst->pwm_slice_num = pwm_slice_num;
@@ -41,6 +39,7 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
         assert(tacho_chan_num == PWM_CHAN_B);
         assert(chan_claim_state[tacho_slice_num][PWM_CHAN_A] == FAN_CHAN_FREE);
         assert(chan_claim_state[tacho_slice_num][PWM_CHAN_B] == FAN_CHAN_FREE);
+        assert(tacho_slice_num != pwm_slice_num);
 
         chan_claim_state[tacho_slice_num][tacho_chan_num] = FAN_CHAN_TACHO;
 
@@ -65,12 +64,13 @@ void fan_init(fan_inst_t *inst, uint pwm_pin, bool has_tacho, uint tacho_pin, ui
         pwm_init(pwm_slice_num, &c, true);
     }
 
+    chan_claim_state[pwm_slice_num][pwm_chan_num] = FAN_CHAN_PWM;
     gpio_set_function(pwm_pin, GPIO_FUNC_PWM);
 }
 
 uint fan_set_speed_man(fan_inst_t *inst, uint speed)
 {
-    uint speed_clamped = speed < inst->min_speed ? 0 : (speed > MAX_FAN_SPEED_VALUE ? MAX_FAN_SPEED_VALUE : 0);
+    uint speed_clamped = speed < inst->min_speed ? 0 : (speed > MAX_FAN_SPEED_VALUE ? MAX_FAN_SPEED_VALUE : speed);
     pwm_set_chan_level(inst->pwm_slice_num, inst->pwm_chan_num, speed_clamped);
     inst->speed = speed_clamped;
     return inst->speed;

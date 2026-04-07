@@ -76,6 +76,10 @@ static int parse_character(serial_read_buffer_t *buffer, serial_read_settings_t 
         case '\t': //Horizontal Tab
             break;
         case '\n': //Line Feed
+            if(settings.echo)
+            {
+                stdio_putchar_raw('\n');
+            }
             buffer->data[buffer->index++] = '\n';
             buffer->data[buffer->index] = '\0';
             if(settings.strip_crlf_ending)
